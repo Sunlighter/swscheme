@@ -1,0 +1,204 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".generated.cs" #>
+/*
+    This file is part of Sunlit World Scheme
+    http://swscheme.codeplex.com/
+    Copyright (c) 2010 by Edward Kiser (edkiser@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Runtime.Serialization;
+using ExprObjModel.CodeGeneration;
+using BigMath;
+
+namespace ExprObjModel
+{
+    public static partial class ProxyGenerator
+    {
+        <#
+            string[] typeName = new string[]
+            {
+                "Byte", "Int16", "Int32", "Int64", "IntPtr",
+                "SByte", "UInt16", "UInt32", "UInt64", "UIntPtr"
+            };
+
+            string[] csTypeName = new string[]
+            {
+                "byte", "short", "int", "long", "IntPtr",
+                "sbyte", "ushort", "uint", "ulong", "UIntPtr"
+            };
+
+            for (int i = 0; i < 10; ++i)
+            {
+        #>
+
+        public static <#= csTypeName[i] #> NumberTo<#= typeName[i] #>(object obj, OverflowBehavior ob)
+        {
+            if (obj is BigInteger)
+            {
+                return ((BigInteger)obj).Get<#= typeName[i] #>Value(ob);
+            }
+            else if (obj is BigRational)
+            {
+                return ((BigRational)obj).Round().Get<#= typeName[i] #>Value(ob);
+            }
+            else if (obj is double)
+            {
+                return (<#= csTypeName[i] #>)(double)obj;
+            }
+            else throw new SchemeRuntimeException("BigInteger or BigRational or double expected");
+        }
+
+        private static void MarshalTo<#= typeName[i] #>(CodeGenerator cg, OverflowBehavior ob, LocalBuilder local<#= typeName[i] #>Dest)
+        {
+            cg.LoadInt((int)ob);
+            cg.Call(typeof(ProxyGenerator).GetMethod("NumberTo<#= typeName[i] #>", new Type[] { typeof(object), typeof(OverflowBehavior) }));
+            cg.StoreLocal(local<#= typeName[i] #>Dest);
+        }
+
+        private static void UnmarshalFrom<#= typeName[i] #>(CodeGenerator cg)
+        {
+            cg.Call(typeof(BigInteger).GetMethod("From<#= typeName[i] #>"));
+        }
+
+        <#
+            }
+        #>
+
+        private static void MarshalToTypeAndStore(CodeGenerator cg, OverflowBehavior beh, LocalBuilder localDest, int globalStateIndex)
+        {
+        <#
+            for (int i = 0; i < 10; ++i)
+            {
+        #>
+            
+            <#= (i == 0) ? "" : "else " #>if (localDest.LocalType == typeof(<#= csTypeName[i] #>))
+            {
+                MarshalTo<#= typeName[i] #>(cg, beh, localDest);
+            }
+        <#
+            }
+        #>
+
+            else if (localDest.LocalType == typeof(string))
+            {
+                MarshalToString(cg, localDest);
+            }
+            else if (localDest.LocalType == typeof(bool))
+            {
+                MarshalToBool(cg, localDest);
+            }
+            else if (localDest.LocalType == typeof(char))
+            {
+                MarshalToChar(cg, localDest);
+            }
+            else if (localDest.LocalType == typeof(float))
+            {
+                MarshalToFloat(cg, localDest);
+            }
+            else if (localDest.LocalType == typeof(double))
+            {
+                MarshalToDouble(cg, localDest);
+            }
+            else if (localDest.LocalType == typeof(SchemeString))
+            {
+                MarshalToSchemeString(cg, localDest);
+            }
+            else if (localDest.LocalType == typeof(BigRational))
+            {
+                MarshalToBigRational(cg, localDest);
+            }
+            else if (typeof(IDisposable).IsAssignableFrom(localDest.LocalType))
+            {
+                MarshalToIDisposable(cg, localDest, globalStateIndex);
+            }
+            else if (localDest.LocalType == typeof(object))
+            {
+                MarshalToObject(cg, localDest);
+            }
+            else if (localDest.LocalType.IsValueType)
+            {
+                MarshalToValueType(cg, localDest);
+            }
+            else
+            {
+                MarshalToSpecificClass(cg, localDest);
+            }
+        }
+
+        private static void UnmarshalFromType(CodeGenerator cg, Type t, string disposableName, int globalStateIndex)
+        {
+        <#
+            for (int i = 0; i < 10; ++i)
+            {
+        #>
+            
+            <#= (i == 0) ? "" : "else " #>if (t == typeof(<#= csTypeName[i] #>))
+            {
+                UnmarshalFrom<#= typeName[i] #>(cg);
+            }
+        <#
+            }
+        #>
+
+            else if (t == typeof(void))
+            {
+                UnmarshalFromVoid(cg);
+            }
+            else if (t == typeof(string))
+            {
+                UnmarshalFromString(cg);
+            }
+            else if (t == typeof(bool))
+            {
+                UnmarshalFromBool(cg);
+            }
+            else if (t == typeof(char))
+            {
+                UnmarshalFromChar(cg);
+            }
+            else if (t == typeof(SchemeString))
+            {
+                UnmarshalFromSchemeString(cg);
+            }
+            else if (t == typeof(BigRational))
+            {
+                UnmarshalFromBigRational(cg);
+            }
+            else if (t == typeof(float))
+            {
+                UnmarshalFromFloat(cg);
+            }
+            else if (typeof(IDisposable).IsAssignableFrom(t))
+            {
+                UnmarshalFromIDisposable(cg, disposableName, globalStateIndex);
+            }
+            else if (t.IsValueType)
+            {
+                cg.Box(t);
+            }
+            else
+            {
+                ;
+                // do nothing: object will pass directly to Scheme
+            }
+        }
+    }
+}

@@ -1,0 +1,13 @@
+copy ..\SchemeConsole\bin\Debug\SchemeConsole.exe .
+copy ..\SchemeConsole\bin\Debug\SchemeConsole.pdb .
+copy ..\SchemeRun\bin\Debug\SchemeRun.exe .
+copy ..\SchemeRun\bin\Debug\SchemeRun.pdb .
+copy ..\ExprObjModel\bin\Debug\ExprObjModel.dll .
+copy ..\ExprObjModel\bin\Debug\ExprObjModel.pdb .
+copy ..\ControlledWindowLib\bin\Debug\ControlledWindowLib.dll .
+copy ..\ControlledWindowLib\bin\Debug\ControlledWindowLib.pdb .
+copy ..\ExprObjModel\swscheme2.xml .
+copy ..\ExprObjModel\swscheme2.xsl .
+copy ..\Grayspace\bin\Debug\Grayspace.exe .
+copy ..\Grayspace\bin\Debug\Grayspace.pdb .
+copy ..\Grayspace\bin\Debug\Grayspace.exe.config .

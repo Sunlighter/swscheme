@@ -1,0 +1,578 @@
+<?xml version="1.0" encoding="utf-8"?>
+<?xml-stylesheet href="swscheme2.xsl" type="text/xsl"?>
+<!DOCTYPE doc [
+  <!ELEMENT doc (maintitle, section*)>
+  <!ELEMENT maintitle (#PCDATA)>
+  <!ELEMENT section (title, (p|ul|ulp|section)*)>
+  <!ATTLIST section name CDATA #IMPLIED>
+  <!ELEMENT title (#PCDATA)>
+  <!ELEMENT ul (li|ul)*>
+  <!ELEMENT ulp (li|ul|ulp)*>
+  <!ELEMENT li (#PCDATA | code | var | i | b | xref | link)*>
+  <!ELEMENT p (#PCDATA | code | var | i | b | xref | link)*>
+  <!ELEMENT code (#PCDATA | var)*>
+  <!ELEMENT var (#PCDATA)>
+  <!ELEMENT xref EMPTY>
+  <!ATTLIST xref dest CDATA #IMPLIED>
+  <!ELEMENT link (#PCDATA)>
+  <!ATTLIST link url CDATA #IMPLIED>
+  <!ELEMENT i (#PCDATA)>
+  <!ELEMENT b (#PCDATA)>
+  <!ENTITY lt "&#38;#60;">
+  <!ENTITY gt "&#62;">
+  <!ENTITY amp "&#38;#38;">
+  <!ENTITY apos "&#39;">
+  <!ENTITY quot "&#34;">
+  <!ENTITY ndash "&#8211;">
+  <!ENTITY mdash "&#8212;">
+  <!ENTITY lsquo "&#8216;">
+  <!ENTITY rsquo "&#8217;">
+  <!ENTITY ldquo "&#8220;">
+  <!ENTITY rdquo "&#8221;">
+]>
+<!-- formatted to 118 chars width -->
+<doc>
+
+<maintitle>Sunlit World Scheme Standard Compliance Status</maintitle>
+
+<section name="intro"><title>Introduction</title>
+
+<p>Sunlit World Scheme is intended to comply (mostly) with the
+<link url="http://www.cs.indiana.edu/scheme-repository/doc.standards.html">R4RS standard</link>. However, Sunlit World
+Scheme is not fully standard-compliant. Some deviations from the R4RS standard are intentional, some are not.</p>
+
+<p>R4RS was chosen, even though the R5RS and R6RS standards have been released, because it might be easier to comply
+with R4RS than subsequent standards, and because R4RS is a useful subset of R5RS and R6RS. R4RS is a useful
+stepping-stone on the way to compliance with later standards.</p>
+
+<p>This document is intended to show the standard compliance status of Sunlit World Scheme in detail. The sections of
+this document therefore follow the sections in the R4RS document. The <i>content</i>, however, is different: here,
+only differences from the standard are recorded.</p>
+
+<p>The primary purpose of this document is to identify areas where future development efforts on Sunlit World Scheme
+may be useful. However, this document might be useful to anyone who is attempting to port a program from Standard
+Scheme to Sunlit World Scheme, or use Sunlit World Scheme to write a Standard-compliant program.</p>
+
+<p>Sunlit World Scheme has several features that are not addressed by the Standard at all, such as graphics. These
+features are not addressed in this document except incidentally.</p>
+
+<p>If otherwise unspecified, when this document says that a feature is &ldquo;supported,&rdquo; that means it is
+supported in a Standard-compliant way. Otherwise it will be described as &ldquo;partially supported&rdquo; (with
+details) or &ldquo;not supported.&rdquo;</p>
+
+</section>
+
+<section name="1"><title>1. Overview of Scheme</title>
+
+<section name="1.1"><title>1.1. Semantics</title>
+
+<p>Sunlit World Scheme, like Standard Scheme, is statically scoped.</p>
+
+<p>In Sunlit World Scheme, as in the Standard, types are associated with values and not variables.</p>
+
+<p>Sunlit World Scheme is almost fully garbage-collected. However, some types, such as bitmaps (which are not included
+in the Standard anyway) have to be kept in global lists until they can be destroyed manually. This is required by the
+dot-Net platform.</p>
+
+<p>Sunlit World Scheme, like Standard Scheme, is properly tail-recursive.</p>
+
+<p>Sunlit World Scheme procedures and continuations are first-class objects, as required by the Standard.</p>
+
+<p>Sunlit World Scheme, like Standard Scheme, evaluates all procedure arguments and passes them by value. Sometimes
+the values passed are references.</p>
+
+<p>Sunlit World Scheme, like Standard Scheme, supports arbitrary-precision integers and rationals, and supports
+floating-point numbers, but does not currently support complex numbers. Sunlit World Scheme supports a few types
+beyond the standard such as 3-D vectors and quaternions.</p>
+
+</section>
+
+<section name="1.2"><title>1.2. Syntax</title>
+
+<p>Sunlit World Scheme syntax follows the same basic rules as Standard Scheme.</p>
+
+</section>
+
+<section name="1.3"><title>1.3. Notation and Terminology</title>
+
+<p>Sunlit World Scheme fails to support some features that are marked &ldquo;essential&rdquo; in R4RS.</p>
+
+<p>Sunlit World Scheme has a robust exception-handling mechanism that exceeds what is required by the standard. It is
+possible for a program to catch exceptions raised by primitive operations, thus preventing an error from being
+signalled.</p>
+
+<p>Sunlit World Scheme follows the tradition of having an explicit value called the &ldquo;unspecified&rdquo;
+value. This value, since it is not <code>#f</code>, counts as true in conditional expressions.  Sunlit World Scheme
+sometimes returns this unspecified value whenever the Standard says that a return value is unspecified. However, this
+is impossible in some cases; for example, it is unspecified whether <code>eq?</code> returns <code>#t</code>
+or <code>#f</code> when given two integers with the same value, but it must return either <code>#t</code>
+or <code>#f</code>. Its return value in turn affects the behavior of the <code>memq</code> and
+<code>assq</code> functions in such a way that their return value may differ depending on which way <code>eq?</code>
+is implemented, but it would be wrong for <code>memq</code> to return a value of &ldquo;unspecified.&rdquo;</p>
+
+</section>
+
+</section>
+
+<section name="2"><title>2. Lexical Conventions</title>
+
+<p>Sunlit World Scheme deviates from the standard by being case-sensitive. The symbols <code>n</code>
+and <code>N</code> are considered distinct.</p>
+
+<p>Symbols defined by the Standard are defined in lower case in Sunlit World Scheme. For
+example, <code>list-&gt;vector</code> is defined, but <code>LIST-&gt;VECTOR</code> is undefined.</p>
+
+<p>Sunlit World Scheme does not currently have an option to turn off case-sensitivity.</p>
+
+<section name="2.1"><title>2.1. Identifiers</title>
+
+<p>Sunlit World Scheme&rsquo;s lexical analyzer supports two types of identifiers.</p>
+
+<ulp>
+
+<li>Explicitly &ldquo;barred&rdquo; identifiers, which are like quoted strings, but use the bar
+character <code>|</code> instead of quotes. The symbol <code>||</code> is the empty identifier.</li>
+
+<li>Anything that is not a barred identifier is compared against all the lexical patterns for other types of
+lexemes. If no other type of lexeme can be assigned, the lexeme is classed as an identifier. However, there is no
+spacing requirement, so that the characters <code>3f</code> will be identified as the integer <code>3</code> followed
+by the symbol <code>f</code>.</li>
+
+</ulp>
+
+</section>
+
+<section name="2.2"><title>2.2. Whitespace and Comments</title>
+
+<p>Sunlit World Scheme uses the dot-Net regular expression <code>\s</code> to recognize white space.</p>
+
+<p>Standard-compliant comments are supported.</p>
+
+</section>
+
+<section name="2.3"><title>2.3. Other Notations</title>
+
+<p>Sunlit World Scheme supports the same symbols as Standard Scheme. Parentheses and the quote and backquote
+abbreviations (<code>'</code>, <code>`</code>, <code>,</code>, and <code>,@</code>) are handled in the Standard
+way. Sunlit World Scheme supports strings in the standard way.</p>
+
+<p>Sunlit World Scheme uses <code>{</code> and <code>}</code> for a non-standard Guid data type.</p>
+
+<p>Sunlit World Scheme uses <code>[</code> and <code>]</code> for non-standard IP address and (IP address, port) pair
+types.</p>
+
+<p>Sunlit World Scheme supports <code>#x</code> for hexadecimal integers, but does not support
+the <code>#b</code>, <code>#o</code>, <code>#d</code>, <code>#e</code>, or <code>#i</code> notations.</p>
+
+</section>
+
+</section>
+
+<section name="3"><title>3. Basic Concepts</title>
+
+<section name="3.1"><title>3.1. Variables and Regions</title>
+
+<p>Sunlit World Scheme does not ever allow unbound identifiers. Any expression containing an unbound identifier will
+cause an error to be signaled during syntax analysis. This differs from Standard Scheme, which allows that an unbound
+identifier might be defined later in the top-level environment, and therefore does not signal an error unless the
+identifier is still unbound during evaluation.</p>
+
+</section>
+
+<section name="3.2"><title>3.2. True and False</title>
+
+<p>Sunlit World Scheme handles <code>#t</code> and <code>#f</code> in a Standard-compliant way. Sunlit World Scheme
+considers the empty list to be true.</p>
+
+</section>
+
+<section name="3.3"><title>3.3. External Representations</title>
+
+<p>This section of the Standard seems to be non-normative.</p>
+
+</section>
+
+<section name="3.4"><title>3.4. Disjointness of Types</title>
+
+<p>Sunlit World Scheme conforms to the disjointness of types described by this section of the Standard. Sunlit World
+Scheme supports some types that do not satisfy any of the given predicates.</p>
+
+</section>
+
+<section name="3.5"><title>3.5. Storage Model</title>
+
+<p>Sunlit World Scheme supports mutable strings through emulation.</p>
+
+<p>Data quoted in programs is stored mutably in memory, so that a program in memory can modify its own constants and
+see the modified constants when run again.</p>
+
+</section>
+
+</section>
+
+<section name="4"><title>4. Expressions</title>
+
+<section name="4.1"><title>4.1. Primitive Expression Types</title>
+
+<p>Variable references work as specified in the Standard, except that in Sunlit World Scheme it is an error to refer
+to an unbound identifier even in expressions that have not been evaluated.</p>
+
+<p>Literal expressions work as specified in the Standard.</p>
+
+<p>Procedure calls work as specified in the Standard.</p>
+
+<p>Lambda expressions work as specified in the Standard.</p>
+
+<p>Conditional expressions work as specified in the Standard, except that Sunlit World Scheme has an implementation
+bug where an <code>if</code> syntax with the wrong number of arguments (e.g., <code>(if <var>a</var>)</code>
+or <code>(if <var>a</var> <var>b</var> <var>c</var> <var>d</var>)</code> will be interpreted as a procedure call, thus
+typically producing the error that the variable <code>if</code> is undefined.</p>
+
+<p>Assignments work as specified in the Standard.</p>
+
+</section>
+
+<section name="4.2"><title>4.2. Derived Expression Types</title>
+
+<p>The <code>cond</code> syntax is supported. The <code>=&gt;</code> symbol is supported.</p>
+
+<p>The <code>case</code> syntax is supported.</p>
+
+<p>The <code>and</code> syntax is supported.</p>
+
+<p>The <code>or</code> syntax is supported.</p>
+
+<p>The <code>let</code>, <code>let*</code>, and <code>letrec</code> syntaxes are supported.</p>
+
+<p>The <code>begin</code> syntax is supported.</p>
+
+<p>The <code>do</code> syntax is not supported.</p>
+
+<p>The named <code>let</code> syntax is supported.</p>
+
+<p>The <code>delay</code> expression is not supported.</p>
+
+<p>Quasiquotation is supported.</p>
+
+</section>
+
+</section>
+
+<section name="5"><title>5. Program Structure</title>
+
+<section name="5.1"><title>5.1. Programs</title>
+
+<p>Sunlit World Scheme executes a program when it is specified by <code>(load <var>filename</var>)</code> at the
+interpreter prompt, or when given as an argument to the <code>SchemeRun.exe</code> program.</p>
+
+</section>
+
+<section name="5.2"><title>5.2. Definitions</title>
+
+<ulp>
+
+<li><code>(define <var>var</var> <var>expr</var>)</code> is supported.</li>
+
+<li><code>(define (<var>var</var> <var>formals</var> <var>...</var>) <var>body</var>)</code> is not supported.</li>
+
+<li><code>(define (<var>var</var> . <var>formal</var>) <var>body</var>)</code> is not supported.</li>
+
+<li><code>(define <var>...</var>)</code> is not supported inside of a <code>(begin <var>...</var>)</code>, even though
+the standard declares it an essential feature.</li>
+
+</ulp>
+
+<p>Internal definitions (inside of a <code>lambda</code>, <code>let</code>, <code>let*</code>, <code>letrec</code>, or
+another <code>define</code>) are not supported in Sunlit World Scheme. <code>define</code> is only available at the top
+level.</p>
+
+</section>
+
+</section>
+
+<section name="6"><title>6. Standard Procedures</title>
+
+<section name="6.1"><title>6.1. Booleans</title>
+
+<p><code>(not <var>bool</var>)</code> is supported.</p>
+
+<p><code>(boolean? <var>obj</var>)</code> is supported.</p>
+
+</section>
+
+<section name="6.2"><title>6.2. Equivalence Predicates</title>
+
+<p><code>eq?</code> is supported.</p>
+
+<p><code>(eqv? <var>obj1</var> <var>obj2</var>)</code> is supported but has unusual behavior. In Sunlit World
+Scheme, <code>eqv?</code> returns <code>#t</code> if given two distinct vectors of the same length whose corresponding
+items are <code>eq?</code>.</p>
+
+<p><code>equal?</code> is not supported.</p>
+
+</section>
+
+<section name="6.3"><title>6.3. Pairs and Lists</title>
+
+<p>Lists, <code>pair?</code>, <code>cons</code>, <code>car</code>, <code>cdr</code>, <code>set-car!</code>,
+and <code>set-cdr!</code> are supported.</p>
+
+<p>All compositions of <code>car</code> and <code>cdr</code> up to four <code>a</code> and <code>d</code> characters
+(e.g., <code>caaaar</code>) are supported.</p>
+
+<p><code>null?</code> is supported.</p>
+
+<p><code>list?</code> is supported and terminates even for circular data structures.</p>
+
+<p><code>list</code> is supported.</p>
+
+<p><code>length</code> is supported.</p>
+
+<p><code>append</code> is supported.</p>
+
+<p><code>reverse</code> is supported.</p>
+
+<p><code>list-tail</code> is not supported.</p>
+
+<p><code>list-ref</code> is not supported.</p>
+
+<p><code>memq</code> and <code>memv</code> are supported, but <code>member</code> is not supported.</p>
+
+<p><code>assq</code> and <code>assv</code> are supported, but <code>assoc</code> is not supported.</p>
+
+</section>
+
+<section name="6.4"><title>6.4. Symbols</title>
+
+<p><code>symbol?</code> is supported.</p>
+
+<p><code>symbol-&gt;string</code> is supported.</p>
+
+<p><code>string-&gt;symbol</code> is supported.</p>
+
+</section>
+
+<section name="6.5"><title>6.5. Numbers</title>
+
+<p>In Sunlit World Scheme, integers and rationals are always exact and reals are always inexact.</p>
+
+<p>The use of <code>s</code>, <code>f</code>, <code>d</code>, and <code>l</code> to identify
+short-float, float, double, and long-double formats is not supported.</p>
+
+<p><code>number?</code> is not supported.</p>
+
+<p><code>complex?</code> is not supported.</p>
+
+<p><code>real?</code> is not supported.</p>
+
+<p><code>rational?</code> is not supported.</p>
+
+<p><code>integer?</code> is supported.</p>
+
+<p><code>exact?</code> is not supported.</p>
+
+<p><code>inexact?</code> is not supported.</p>
+
+<p><code>zero?</code> is not supported.</p>
+
+<p><code>positive?</code> is not supported.</p>
+
+<p><code>negative?</code> is not supported.</p>
+
+<p><code>odd?</code> is supported.</p>
+
+<p><code>even?</code> is supported.</p>
+
+<p><code>max</code> and <code>min</code> are supported.</p>
+
+<p><code>+</code>, <code>*</code>, <code>-</code>, and <code>/</code> are supported.</p>
+
+<p><code>abs</code> is supported.</p>
+
+<p><code>quotient</code>, <code>remainder</code>, and <code>modulo</code> are supported.</p>
+
+<p><code>gcd</code>, <code>lcm</code>, <code>numerator</code>, and <code>denominator</code> are supported. <code>gcd</code>
+and <code>lcm</code> are extended to work with rational numbers, e.g., <code>(gcd 1/2 1/3)</code> yields <code>1/6</code>.</p>
+
+<p><code>floor</code>, <code>ceiling</code>, <code>truncate</code>, and <code>round</code> are supported.</p>
+
+<p><code>rationalize</code> is not supported.</p>
+
+<p><code>exp</code>, <code>log</code>, <code>sin</code>, <code>cos</code>, <code>tan</code>, <code>asin</code>, and
+<code>acos</code> are supported. <code>atan</code> only works with a single argument. There is a function <code>atan2</code>
+which takes two arguments.</p>
+
+<p><code>sqrt</code> and <code>expt</code> are supported.</p>
+
+<p><code>make-rectangular</code>, <code>make-polar</code>, <code>real-part</code>, <code>imag-part</code>,
+<code>magnitude</code>, and <code>angle</code> are not supported.</p>
+
+<p><code>exact-&gt;inexact</code> works by converting its argument to a double-precision floating-point number.
+This is the only type of floating-point number supported in Sunlit World Scheme. If the argument is already a
+floating-point number, it is returned unchanged.</p>
+
+<p><code>inexact-&gt;exact</code> works by converting its argument to an exact rational. Floating-point numbers
+are separated into their sign, exponent, and fraction parts, and the exact rational is generated from the
+literal interpretation of those parts. If the argument is
+already a rational or integer, it is returned unchanged.</p>
+
+<p><code>number-&gt;string</code> and <code>string-&gt;number</code> are not supported. There
+are functions <code>bigint-&gt;string</code> and <code>string-&gt;bigint</code>, but they do not have the same
+signature (they require a numeric base to be passed as an argument), and do not parse strings of the same format
+(e.g., they do not parse Scheme formats such as <code>#x</code>.)</p>
+
+</section>
+
+<section name="6.6"><title>6.6. Characters</title>
+
+<p>In Sunlit World Scheme, case is not significant in character names. This conforms to the Standard.</p>
+
+<p><code>char?</code> is supported.</p>
+
+<p><code>char=?</code>, <code>char&lt;?</code>, <code>char&gt;?</code>, <code>char&lt;=?</code>,
+and <code>char&gt;=?</code> are supported with two or more arguments.</p>
+
+<p><code>char-ci=?</code>, <code>char-ci&lt;?</code>, <code>char-ci&gt;?</code>, <code>char-ci&lt;=?</code>,
+and <code>char-ci&gt;=?</code> are supported with two or more arguments.</p>
+
+<p><code>char-alphabetic?</code>, <code>char-numeric?</code>, <code>char-whitespace?</code>,
+<code>char-upper-case?</code>, and <code>char-lower-case?</code> are supported.</p>
+
+<p><code>char-&gt;integer</code> and <code>integer-&gt;char</code> are supported.</p>
+
+<p><code>char-upcase</code> and <code>char-downcase</code> are supported.</p>
+
+</section>
+
+<section name="6.7"><title>6.7. Strings</title>
+
+<p>Sunlit World Scheme supports the Standard notation for strings. It also supports additional backslash
+escapes in strings besides <code>\&quot;</code> and <code>\\</code>.</p>
+
+<p><code>string?</code> is supported.</p>
+
+<p><code>(make-string <var>k</var> <var>char</var>)</code> is supported, but
+<code>(make-string <var>k</var>)</code> is not supported.</p>
+
+<p><code>string</code> is not supported.</p>
+
+<p><code>string-length</code>, <code>string-ref</code>, and <code>string-set!</code> are supported.</p>
+
+<p><code>string=?</code> and <code>string-ci=?</code> are supported but accept only two arguments.</p>
+
+<p><code>string&lt;?</code>, <code>string&gt;?</code>, <code>string&lt;=?</code>,
+<code>string&gt;?</code>, <code>string-ci&lt;?</code>, <code>string-ci&gt;?</code>,
+<code>string-ci&lt;=?</code>, and <code>string-ci&gt;=?</code> are supported and support two or more
+arguments.</p>
+
+<p><code>substring</code> is supported.</p>
+
+<p><code>string-append</code> is supported.</p>
+
+<p><code>string-&gt;list</code> and <code>list-&gt;string</code> are not supported.</p>
+
+<p><code>string-copy</code> is not supported.</p>
+
+<p><code>string-fill!</code> does not behave as specified by the Standard. The Sunlit World Scheme version
+of <code>string-fill!</code>
+takes a string, a start, a count, and a fill character, and returns the unspecified value.</p>
+
+</section>
+
+<section name="6.8"><title>6.8. Vectors</title>
+
+<p>Sunlit World Scheme supports the Standard notation for vectors.</p>
+
+<p><code>vector?</code> is supported.</p>
+
+<p><code>(make-vector <var>k</var> <var>fill</var>)</code> is supported, but
+<code>(make-vector <var>k</var>)</code> is not supported.</p>
+
+<p><code>vector</code> is supported.</p>
+
+<p><code>vector-length</code>, <code>vector-ref</code>, and <code>vector-set!</code> are supported.</p>
+
+<p><code>vector-&gt;list</code> and <code>list-&gt;vector</code> are supported.</p>
+
+<p><code>vector-fill!</code> is not supported.</p>
+
+</section>
+
+<section name="6.9"><title>6.9. Control Features</title>
+
+<p><code>procedure?</code> is supported.</p>
+
+<p><code>apply</code> is supported.</p>
+
+<p><code>map</code> is supported. If lists are not of the same length, <code>map</code> proceeds until
+the shortest list is exhausted and returns the results accumulated up to that point.</p>
+
+<p><code>for-each</code> is supported. If lists are not of the same length, <code>for-each</code> proceeds
+until the shortest lists is exhausted.</p>
+
+<p><code>force</code> is not supported.</p>
+
+<p><code>call-with-current-continuation</code> is supported. Continuations behave as specified in the
+Standard.</p>
+
+</section>
+
+<section name="6.10"><title>6.10. Input and Output</title>
+
+<p><code>call-with-input-file</code> and <code>call-with-output-file</code> are not supported.</p>
+
+<p><code>input-port?</code> and <code>output-port?</code> are not supported. Sunlit World Scheme does
+not define a Standard-compliant port type.</p>
+
+<p><code>current-input-port</code> and <code>current-output-port</code> are not supported.</p>
+
+<p><code>with-input-from-file</code> and <code>with-output-to-file</code> are not supported.</p>
+
+<p><code>open-input-file</code> and <code>open-output-file</code> are not supported.</p>
+
+<p><code>close-input-port</code> and <code>close-output-port</code> are not supported.</p>
+
+<p><code>read</code> is not supported (with or without a port argument).</p>
+
+<p><code>read-char</code> is not supported (with or without a port argument).</p>
+
+<p><code>peek-char</code> is not supported (with or without a port argument).</p>
+
+<p><code>eof-object?</code> is not supported, but there is an <code>eof?</code> function.</p>
+
+<p><code>char-ready?</code> is not supported (with or without a port argument).</p>
+
+<p><code>(write <var>obj</var>)</code> is supported and writes to the console.
+<code>(write <var>obj</var> <var>port</var>)</code> is not supported.</p>
+
+<p><code>(display <var>obj</var>)</code> is supported and displays to the console.
+<code>(display <var>obj</var> <var>port</var>)</code> is not supported.</p>
+
+<p><code>(newline)</code> is supported and sends a newline to the console.
+<code>(newline <var>port</var>)</code> is not supported.</p>
+
+<p><code>write-char</code> is not supported (with or without a port argument).</p>
+
+<p><code>load</code> is supported.</p>
+
+<p><code>transcript-on</code> and <code>transcript-off</code> are not supported.</p>
+
+</section>
+
+</section>
+
+<section name="7"><title>7. Formal Syntax and Semantics</title>
+
+<p>Because of various implementation differences, Sunlit World Scheme may not conform to the full formal syntax and
+semantics specified in the R4RS standard. The closest equivalent to a formal specification of Sunlit World
+Scheme&rsquo;s syntax and semantics is the source code.</p>
+
+</section>
+
+<section name="appx"><title>Appendix: Macros</title>
+
+<p>Sunlit World Scheme does not support the macros described in the appendix.</p>
+
+</section>
+
+</doc>

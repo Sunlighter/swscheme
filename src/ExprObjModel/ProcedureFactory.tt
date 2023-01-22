@@ -1,0 +1,193 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ import namespace="System.Text" #>
+<#@ output extension=".generated.cs" #>
+/*
+    This file is part of Sunlit World Scheme
+    http://swscheme.codeplex.com/
+    Copyright (c) 2010 by Edward Kiser (edkiser@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+using System;
+using System.Collections.Generic;
+
+namespace ExprObjModel
+{
+    public static partial class Utils
+    {
+        <#
+
+        for(int i = 0; i < 6; ++i)
+        {
+            bool[] theBools = new bool[] { false, true };
+            foreach(bool b1 in theBools)
+            {
+                foreach(bool b2 in theBools)
+                {
+
+        #>
+
+        private class <#= ProcedureClassName(b1, b2, i) #> : IProcedure
+        {
+            private string name;
+            private <#= DelegateTypeName(b1, b2, i) #> proc;
+
+            public <#= ProcedureClassName(b1, b2, i) #>(string name, <#= DelegateTypeName(b1, b2, i) #> proc)
+            {
+                this.name = name;
+                this.proc = proc;
+            }
+
+            public int Arity { get { return <#= i #>; } }
+
+            public bool More { get { return false; } }
+
+            public IRunnableStep Call(IGlobalState gs, FList<object> argList, IContinuation k)
+            {
+                <#
+                for (int j = 0; j < i; ++j)
+                {
+                #>
+                
+                object <#= ArgName(j) #>;
+
+                if (argList == null)
+                {
+                    return new RunnableThrow(k, new SchemeRuntimeException(name + ": insufficient arguments"));
+                }
+                else
+                {
+                    <#= ArgName(j) #> = argList.Head;
+                    argList = argList.Tail;
+                }
+
+                <#
+                }
+                #>
+
+                if (argList != null)
+                {
+                    return new RunnableThrow(k, new SchemeRuntimeException(name + ": too many arguments"));
+                }
+
+                <#
+                if (b1)
+                {
+                #>
+
+                object result;
+
+                <#
+                }
+                #>
+
+                try
+                {
+                    <#
+                    if (b1)
+                    {
+                    #>
+
+                    result = proc(<#= ProcArgs(b2, i) #>);
+                    return new RunnableReturn(k, result);
+
+                    <#
+                    }
+                    else
+                    {
+                    #>
+
+                    proc(<#= ProcArgs(b2, i) #>);
+                    return new RunnableReturn(k, SpecialValue.UNSPECIFIED);
+
+                    <#
+                    }
+                    #>
+
+                }
+                catch(Exception exc)
+                {
+                    return new RunnableReturn(k, exc);
+                }
+            }
+        }
+
+        public static IProcedure CreateProcedure(string name, <#= DelegateTypeName(b1, b2, i) #> proc)
+        {
+            return new <#= ProcedureClassName(b1, b2, i) #>(name, proc);
+        }
+
+        <#
+
+                }
+            }
+        }
+
+        #>
+
+    }
+}
+<#+
+
+    string ProcedureClassName(bool isFunc, bool useGlobalState, int args)
+    {
+        StringBuilder b = new StringBuilder();
+
+        if (isFunc) { b.Append("Func"); } else { b.Append("Action"); }
+        b.Append("Procedure");
+        if (useGlobalState) b.Append("_GS");
+        b.Append("_");
+        b.Append(args);
+        return b.ToString();
+    }
+
+    string DelegateTypeName(bool isFunc, bool useGlobalState, int args)
+    {
+        if (!isFunc && !useGlobalState && args == 0) return "Action";
+        StringBuilder b = new StringBuilder();
+        if (isFunc) { b.Append("Func"); } else { b.Append("Action"); }
+        b.Append("<");
+        bool needComma = false;
+        if (useGlobalState) { b.Append("IGlobalState"); needComma = true; }
+        for (int i = 0; i < args; ++i)
+        {
+            if (needComma) b.Append(", ");
+            b.Append("object");
+            needComma = true;
+        }
+        if (isFunc) { if (needComma) b.Append(", "); b.Append("object>"); } else b.Append(">");
+        return b.ToString();
+    }
+
+    string ArgName(int i)
+    {
+        return "arg" + (i+1);
+    }
+
+    string ProcArgs(bool useGlobalState, int args)
+    {
+        StringBuilder b = new StringBuilder();
+        bool needComma = false;
+        if (useGlobalState) { b.Append("gs"); needComma = true; }
+        for (int i = 0; i < args; ++i)
+        {
+            if (needComma) b.Append(", ");
+            b.Append(ArgName(i));
+            needComma = true;
+        }
+        return b.ToString();
+    }
+#>

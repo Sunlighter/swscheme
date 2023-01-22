@@ -1,0 +1,248 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".generated.cs" #>
+/*
+    This file is part of Sunlit World Scheme
+    http://swscheme.codeplex.com/
+    Copyright (c) 2010 by Edward Kiser (edkiser@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+using System;
+using System.IO;
+using System.Runtime.Serialization;
+using System.Collections.Generic;
+using BigMath;
+
+namespace ExprObjModel.Coding
+{
+    public static partial class CodingUtils
+    {
+        <#
+            string[] typeName = new string[]
+            {
+                "Byte", "Int16", "Int32", "Int64",
+                "SByte", "UInt16", "UInt32", "UInt64",
+                "Single", "Double"
+            };
+
+            string[] csTypeName = new string[]
+            {
+                "byte", "short", "int", "long",
+                "sbyte", "ushort", "uint", "ulong",
+                "float", "double"
+            };
+
+            string[] varName = new string[]
+            {
+                "b", "s", "i", "l",
+                "sb", "us", "ui", "ul",
+                "f", "d"
+            };
+
+            int[] typeSize = new int[]
+            {
+                1, 2, 4, 8,
+                1, 2, 4, 8,
+                4, 8
+            };
+
+            bool[] isInteger = new bool[]
+            {
+                true, true, true, true,
+                true, true, true, true,
+                false, false
+            };
+
+            for (int i = 0; i < 10; ++i)
+            {
+                if (typeSize[i] == 1) continue;
+        #>
+
+        public static void Write<#= typeName[i] #>(this IWriter w, <#= csTypeName[i] #> <#= varName[i] #>)
+        {
+            byte[] b1 = BitConverter.GetBytes(<#= varName[i] #>);
+            w.WriteBytes(b1, 0, <#= typeSize[i] #>);
+        }
+
+        public static <#= csTypeName[i] #> Read<#= typeName[i] #>(this IReader r)
+        {
+            byte[] b1 = new byte[<#= typeSize[i] #>];
+            r.ReadBytes(b1, 0, <#= typeSize[i] #>);
+            return BitConverter.To<#= typeName[i] #>(b1, 0);
+        }
+
+        <#
+            }
+        #>
+
+    }
+
+    <#
+        for (int j = 0; j < 10; ++j)
+        {
+            if (isInteger[j])
+            {
+    #>
+
+    public class <#= typeName[j] #>Codec : ICodec
+    {
+        public <#= typeName[j] #>Codec() { }
+
+        public bool IsByRef { get { return false; } }
+
+        public void Read(IReader r, Action<object> dest)
+        {
+            <#= csTypeName[j] #> j = r.Read<#= typeName[j] #>();
+            BigInteger jj = BigInteger.From<#= typeName[j] #>(j);
+            dest(jj);
+        }
+
+        public void Test(ITester t, object obj, Action<bool> dest)
+        {
+            if (!(obj is BigInteger))
+            {
+                dest(false);
+            }
+            else
+            {
+                BigInteger jj = (BigInteger)obj;
+                dest(jj.FitsIn<#= typeName[j] #>);
+            }
+        }
+
+        public void Write(IWriter w, object obj)
+        {
+            BigInteger jj = (BigInteger)obj;
+            <#= csTypeName[j] #> j = jj.Get<#= typeName[j] #>Value(OverflowBehavior.Wraparound);
+            w.Write<#= typeName[j] #>(j);
+        }
+    }
+
+    [Pattern("<#= csTypeName[j] #>")]
+    public class <#= typeName[j] #>CodecDesc : CodecDesc
+    {
+        public override ICodec Compile(Environment env)
+        {
+            return new <#= typeName[j] #>Codec();
+        }
+    }
+
+    <#
+            }
+            else
+            {
+    #>
+    
+    public class <#= typeName[j] #>Codec : ICodec
+    {
+        public <#= typeName[j] #>Codec() { }
+
+        public bool IsByRef { get { return false; } }
+
+        public void Read(IReader r, Action<object> dest)
+        {
+            <#= csTypeName[j] #> j = r.Read<#= typeName[j] #>();
+            dest(j);
+        }
+
+        public void Test(ITester t, object obj, Action<bool> dest)
+        {
+            if (obj is BigInteger || obj is BigRational || obj is double)
+            {
+                dest(true);
+            }
+            else
+            {
+                dest(false);
+            }
+        }
+
+        public void Write(IWriter w, object obj)
+        {
+            w.Write<#= typeName[j] #>(<#= (j == 8) ? "(float)" : "" #>ProxyGenerator.NumberToDouble(obj));
+        }
+    }
+
+    [Pattern("<#= csTypeName[j] #>")]
+    public class <#= typeName[j] #>CodecDesc : CodecDesc
+    {
+        public override ICodec Compile(Environment env)
+        {
+            return new <#= typeName[j] #>Codec();
+        }
+    }
+
+    <#
+            }
+        }
+
+        string[] vTypeName = new string[]
+        {
+            "Vector2", "Vector3", "Vertex2", "Vertex3", "Quaternion", "Line3", "Plane3",
+        };
+
+        string[] vSchemeName = new string[]
+        {
+            "vector2", "vector3", "vertex2", "vertex3", "quat", "line3", "plane3",
+        };
+
+        for(int vi = 0; vi < 7; ++vi)
+        {
+    #>
+
+    public class <#= vTypeName[vi] #>Codec : ICodec
+    {
+        public <#= vTypeName[vi] #>Codec() { }
+
+        #region ICodec Members
+
+        public bool IsByRef
+        {
+            get { return false; }
+        }
+
+        public void Read(IReader r, Action<object> dest)
+        {
+            dest(r.Read<#= vTypeName[vi] #>());
+        }
+
+        public void Test(ITester t, object src, Action<bool> dest)
+        {
+            dest(src is <#= vTypeName[vi] #>);
+        }
+
+        public void Write(IWriter w, object obj)
+        {
+            w.Write<#= vTypeName[vi] #>((<#= vTypeName[vi] #>)obj);
+        }
+
+        #endregion
+    }
+
+    [Pattern("<#= vSchemeName[vi] #>")]
+    public class <#= vTypeName[vi] #>CodecDesc : CodecDesc
+    {
+        public override ICodec Compile(Environment env)
+        {
+            return new <#= vTypeName[vi] #>Codec();
+        }
+    }
+
+    <#
+        }
+    #>
+
+}

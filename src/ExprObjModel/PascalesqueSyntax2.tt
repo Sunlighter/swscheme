@@ -1,0 +1,272 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".generated.cs" #>
+/*
+    This file is part of Sunlit World Scheme
+    http://swscheme.codeplex.com/
+    Copyright (c) 2010 by Edward Kiser (edkiser@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+
+using System;
+using System.Collections.Generic;
+using System.Reflection;
+using System.Linq;
+
+using Symbol = ExprObjModel.Symbol;
+using DescendantsWithPatterns = ExprObjModel.DescendantsWithPatternsAttribute;
+using Pattern = ExprObjModel.PatternAttribute;
+using Bind = ExprObjModel.BindAttribute;
+
+namespace Pascalesque.One.Syntax
+{
+    <#
+
+    string[] lSchemeName = new string[]
+    {
+        "byte", "short", "int", "long",
+        "sbyte", "ushort", "uint", "ulong",
+        "double", "float"
+    };
+
+    string[] lVarName = new string[]
+    {
+        "b", "s", "i", "l",
+        "sb", "us", "ui", "ul",
+        "d", "f"
+    };
+
+    string[] lClassName = new string[]
+    {
+        "Byte", "Int16", "Int32", "Int64",
+        "SByte", "UInt16", "UInt32", "UInt64",
+        "Double", "Single"
+    };
+
+    for (int i = 0; i < lSchemeName.Length; ++i)
+    {
+
+    #>
+
+    [Pattern("(<#= lSchemeName[i] #> $<#= lVarName[i] #>)")]
+    public class Literal<#= lClassName[i] #>Syntax : ExprSyntax
+    {
+        [Bind("$<#= lVarName[i] #>")]
+        public <#= lSchemeName[i] #> <#= lVarName[i] #>;
+
+        public override IExpression GetExpr()
+        {
+ 	        return new LiteralExpr(<#= lVarName[i] #>);
+        }
+    }
+
+    [Pattern("<#= lSchemeName[i] #>")]
+    public class <#= lClassName[i] #>TypeSyntax : TypeSyntax
+    {
+        public override Type GetTheType()
+        {
+ 	        return typeof(<#= lSchemeName[i] #>);
+        }
+    }
+    <#
+
+    }
+
+    string[] bopSchemeName = new string[]
+    {
+        "+", "-", "*", "/", "%",
+        "logand", "logior", "logxor",
+        "shl", "shr",
+        "atan2", "ieeeremainder",
+        "logbase", "max", "min", "pow",
+    };
+
+    string[] bopClassName = new string[]
+    {
+        "Add", "Sub", "Mul", "Div", "Rem",
+        "LogAnd", "LogOr", "LogXor",
+        "Shl", "Shr",
+        "Atan2", "IEEERemainder",
+        "LogBase", "Max", "Min", "Pow",
+    };
+
+    string[] bopEnumName = new string[]
+    {
+        "Add", "Sub", "Mul", "Div", "Rem",
+        "And", "Or", "Xor",
+        "Shl", "Shr",
+        "Atan2", "IEEERemainder",
+        "LogBase", "Max", "Min", "Pow"
+    };
+
+    for (int i = 0; i < bopSchemeName.Length; ++i)
+    {
+
+    #>
+
+    [Pattern("(<#= bopSchemeName[i] #> $a $b)")]
+    public class <#= bopClassName[i] #>Syntax : ExprSyntax
+    {
+        [Bind("$a")]
+        public ExprSyntax arg1;
+
+        [Bind("$b")]
+        public ExprSyntax arg2;
+
+        public override IExpression GetExpr()
+        {
+            return new BinaryOpExpr(BinaryOp.<#= bopEnumName[i] #>, arg1.GetExpr(), arg2.GetExpr());
+        }
+    }
+    <#
+
+    }
+
+    string[] uopSchemeName = new string[]
+    {
+        "invert", "negate", "not",
+        "abs", "acos", "asin", "atan", "ceil",
+        "cos", "cosh", "exp", "floor", "log",
+        "log10", "round", "sign", "sin", "sinh",
+        "sqrt", "tan", "tanh", "trunc"
+    };
+
+    string[] uopClassName = new string[]
+    {
+        "Invert", "Negate", "Not",
+        "Abs", "Acos", "Asin", "Atan", "Ceil",
+        "Cos", "Cosh", "Exp", "Floor", "Log",
+        "Log10", "Round", "Sign", "Sin", "Sinh",
+        "Sqrt", "Tan", "Tanh", "Trunc",
+    };
+
+    string[] uopEnumName = new string[]
+    {
+        "Invert", "Negate", "Not",
+        "Abs", "Acos", "Asin", "Atan", "Ceil",
+        "Cos", "Cosh", "Exp", "Floor", "Log",
+        "Log10", "Round", "Sign", "Sin", "Sinh",
+        "Sqrt", "Tan", "Tanh", "Trunc",
+    };
+
+    for (int i = 0; i < uopSchemeName.Length; ++i)
+    {
+
+    #>
+
+    [Pattern("(<#= uopSchemeName[i] #> $a)")]
+    public class <#= uopClassName[i] #>Syntax : ExprSyntax
+    {
+        [Bind("$a")]
+        public ExprSyntax expr;
+
+        public override IExpression GetExpr()
+        {
+            return new UnaryOpExpr(UnaryOp.<#= uopEnumName[i] #>, expr.GetExpr());
+        }
+    }
+    <#
+
+    }
+
+    string[] cmpSchemeName = new string[]
+    {
+        "<", "<=", ">",
+        ">=", "=", "<>",
+    };
+
+    string[] cmpClassName = new string[]
+    {
+        "LessThan", "LessEqual", "GreaterThan",
+        "GreaterEqual", "Equal", "NotEqual",
+    };
+
+    for (int i = 0; i < cmpSchemeName.Length; ++i)
+    {
+
+    #>
+
+    [Pattern("(<#= cmpSchemeName[i] #> $a $b)")]
+    public class <#= cmpClassName[i] #>Syntax : ExprSyntax
+    {
+        [Bind("$a")]
+        public ExprSyntax a;
+
+        [Bind("$b")]
+        public ExprSyntax b;
+
+        public override IExpression GetExpr()
+        {
+            return new ComparisonExpr(Comparison.<#= cmpClassName[i] #>, a.GetExpr(), b.GetExpr());
+        }
+    }
+    <#
+
+    }
+
+    string[] cvtSchemeName = new string[]
+    {
+        "byte", "short", "int", "long",
+        "sbyte", "ushort", "uint", "ulong",
+        "intptr", "uintptr", "float", "double",
+    };
+
+    string[] cvtClassName = new string[]
+    {
+        "Byte", "Int16", "Int32", "Int64",
+        "SByte", "UInt16", "UInt32", "UInt64",
+        "IntPtr", "UIntPtr", "Single", "Double",
+    };
+
+    string[] cvtEnumName = new string[]
+    {
+        "Byte", "Short", "Int", "Long",
+        "SByte", "UShort", "UInt", "ULong",
+        "IntPtr", "UIntPtr", "Float", "Double"
+    };
+
+    for (int i = 0; i < cvtSchemeName.Length; ++i)
+    {
+
+    #>
+
+    [Pattern("(to-<#= cvtSchemeName[i] #> $a)")]
+    public class ConvertTo<#= cvtClassName[i] #>Syntax : ExprSyntax
+    {
+        [Bind("$a")]
+        public ExprSyntax expr;
+
+        public override IExpression GetExpr()
+        {
+            return new ConvertExpr(ConvertTo.<#= cvtEnumName[i] #>, expr.GetExpr());
+        }
+    }
+
+    [Pattern("(as-<#= cvtSchemeName[i] #> $a)")]
+    public class RegardAs<#= cvtClassName[i] #>Syntax : ExprSyntax
+    {
+        [Bind("$a")]
+        public ExprSyntax expr;
+
+        public override IExpression GetExpr()
+        {
+            return new RegardAsExpr(ConvertTo.<#= cvtEnumName[i] #>, expr.GetExpr());
+        }
+    }
+    <#
+    }
+    #>
+
+}

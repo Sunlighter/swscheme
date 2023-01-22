@@ -1,0 +1,164 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".generated.cs" #>
+<#@ assembly name="$(SolutionDir)\Macros\bin\Debug\Macros.dll" #>
+<#@ import namespace="Macros" #>
+/*
+    This file is part of Sunlit World Scheme
+    http://swscheme.codeplex.com/
+    Copyright (c) 2010 by Edward Kiser (edkiser@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+using System;
+using System.Collections.Generic;
+
+namespace ExprObjModel.ObjectSystem
+{
+    <#
+
+    VariantType v = new VariantType
+    (
+        "ExtendedMessage",
+        "public",
+        new Variation[]
+        {
+            new Variation
+            (
+                "EM_SchemeMessage",
+                new Field[]
+                {
+                    new Field("msg", "Message", "Message<object>"),
+                }
+            ),
+            new Variation
+            (
+                "EM_SetHandler",
+                new Field[]
+                {
+                    new Field("mproc", "MProc", "IMsgProcedure")
+                }
+            ),
+            new Variation
+            (
+                "EM_UnsetHandler",
+                new Field[]
+                {
+                    new Field("sig", "Signature", "Signature"),
+                }
+            ),
+            new Variation
+            (
+                "EM_SetCatchAll",
+                new Field[]
+                {
+                    new Field("proc", "Proc", "IProcedure")
+                }
+            ),
+            new Variation
+            (
+                "EM_UnsetCatchAll",
+                new Field[]
+                {
+                }
+            ),
+            new Variation
+            (
+                "EM_AddField",
+                new Field[]
+                {
+                    new Field("fieldName", "FieldName", "Symbol"),
+                    new Field("initialValue", "InitialValue", "object"),
+                }
+            ),
+            new Variation
+            (
+                "EM_RemoveField",
+                new Field[]
+                {
+                    new Field("fieldName", "FieldName", "Symbol"),
+                }
+            ),
+            new Variation
+            (
+                "EM_GetHandlerList",
+                new Field[]
+                {
+                    new Field("k", "K", "ObjectID"),
+                    new Field("kdata", "KData", "object")
+                }
+            ),
+            new Variation
+            (
+                "EM_HandlerListResponse",
+                new Field[]
+                {
+                    new Field("v", "Value", "HashSet<Signature>"),
+                    new Field("kdata", "KData", "object")
+                }
+            ),
+            new Variation
+            (
+                "EM_GetFieldList",
+                new Field[]
+                {
+                    new Field("k", "K", "ObjectID"),
+                    new Field("kdata", "KData", "object"),
+                }
+            ),
+            new Variation
+            (
+                "EM_FieldListResponse",
+                new Field[]
+                {
+                    new Field("v", "Value", "HashSet<Symbol>"),
+                    new Field("kdata", "KData", "object")
+                }
+            ),
+            new Variation
+            (
+                "EM_Close",
+                new Field[]
+                {
+                }
+            ),
+            new Variation
+            (
+                "EM_PoolQueue",
+                new Field[]
+                {
+                    new Field("priority", "Priority", "int"),
+                    new Field("action", "Action", "Action")
+                }
+            ),
+            new Variation
+            (
+                "EM_PoolComplete",
+                new Field[]
+                {
+                    new Field("thread", "Thread", "int")
+                }
+            ),
+        }
+    );
+
+    WriteLine("");
+
+    foreach(string line in MacroUtils.Emit(8, v))
+    {
+        WriteLine(line);
+    }
+    #>
+
+}

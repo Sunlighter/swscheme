@@ -1,0 +1,119 @@
+﻿<#@ template language="C#" #>
+<#@ import namespace="ExprObjModel" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Configuration" #>
+<!DOCTYPE html>
+<html>
+<head>
+<title><#= Title #></title>
+</head>
+<body>
+<h1><#= Title #></h1>
+<pre>
+<#
+SchemeScanner s = new SchemeScanner();
+int grayArea = 0;
+int lineNumber = 1;
+foreach(string line in SchemeLines)
+{
+    s.ResetMode();
+    int nextGrayArea = grayArea;
+    GrayPrint(LexemeType.Whitespace, lineNumber.ToString("000000") + "  ", 8 + 2 * grayArea);
+    int grayRemain = 2 * grayArea;
+    foreach(ScanResult sr in Scan(s, line))
+    {
+        nextGrayArea += Change(sr.type);
+        GrayPrint(sr.type, sr.str, grayRemain);
+        grayRemain -= sr.str.Length;
+    }
+    WriteLine("");
+    grayArea = nextGrayArea;
+    ++lineNumber;
+}
+#>
+</pre>
+</body>
+</html>
+<#+
+public string Title { get; set; }
+
+public IEnumerable<string> SchemeLines { get; set; }
+
+public IEnumerable<ScanResult> Scan(SchemeScanner ss, string line)
+{
+    int pos = 0;
+    int newPos;
+    ScanResult sr = default(ScanResult);
+    while(true)
+    {
+        ss.Scan(line, pos, out sr, out newPos);
+        yield return sr;
+        if (newPos == line.Length) break;
+        pos = newPos;
+    }
+}
+
+public string GetForeColor(LexemeType lt)
+{
+    string name = lt.ToString() + "_F";
+    return ConfigurationManager.AppSettings[name] ?? "#000000";
+}
+
+public string GetBackColor(LexemeType lt)
+{
+    string name = lt.ToString() + "_B";
+    return ConfigurationManager.AppSettings[name] ?? "#FFFFFF";
+}
+
+public string GetGrayForeColor(LexemeType lt)
+{
+    string name = lt.ToString() + "_GF";
+    return ConfigurationManager.AppSettings[name] ?? GetForeColor(lt);
+}
+
+public string GetGrayBackColor(LexemeType lt)
+{
+    string name = lt.ToString() + "_GB";
+    return ConfigurationManager.AppSettings[name] ?? "#D0D0D0";
+}
+
+public int Change(LexemeType lt)
+{
+    switch(lt)
+    {
+        case LexemeType.LeftParen:
+        case LexemeType.PoundLeftParen:
+        case LexemeType.PoundSLeftParen:
+        case LexemeType.PoundMLeftParen:
+        case LexemeType.PoundSigLeftParen:
+        case LexemeType.PoundMsgLeftParen:
+        case LexemeType.PoundVector3LeftParen:
+        case LexemeType.PoundVertex3LeftParen:
+        case LexemeType.PoundVector2LeftParen:
+        case LexemeType.PoundVertex2LeftParen:
+        case LexemeType.PoundQuatLeftParen:
+            return 1;
+        case LexemeType.RightParen:
+            return -1;
+        default:
+            return 0;
+    }
+}
+
+public void GrayPrint(LexemeType lt, string str, int grayChars)
+{
+    if (str.Length == 0) return;
+    if (grayChars > 0)
+    {
+        string fg = GetGrayForeColor(lt);
+        string bg = GetGrayBackColor(lt);
+        #><span style="color: <#= fg #>; background-color: <#= bg #>"><#= ((grayChars < str.Length) ? str.Substring(0, grayChars) : str) #></span><#+
+    }
+    if ((str.Length - grayChars) > 0)
+    {
+        string fg = GetForeColor(lt);
+        string bg = GetBackColor(lt);
+        #><span style="color: <#= fg #>; background-color: <#= bg #>;"><#= ((grayChars < 0) ? str : str.Substring(grayChars)) #></span><#+
+    }
+}
+#>

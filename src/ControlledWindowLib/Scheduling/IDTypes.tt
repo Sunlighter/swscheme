@@ -1,0 +1,110 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".generated.cs" #>
+using System;
+using System.Collections.Generic;
+
+namespace ControlledWindowLib.Scheduling
+{
+<#
+    WriteIDType(true, "SignalID", "ulong", "signal id", delegate(string str) { return str + " + 1ul"; });
+    WriteIDType(false, "TimerID", "ushort", "timer id", delegate(string str) { return "(ushort)(" + str + " + 1u)"; });
+    WriteIDType(true, "ObjectID", "uint", "object id", delegate(string str) { return str + " + 1u"; });
+    WriteIDType(false, "WaitID", "uint", "wait id", delegate(string str) { return str + " + 1u"; });
+#>
+}
+
+<#+
+void WriteIDType(bool isPublic, string name, string dataType, string friendlyName, Func<string, string> inc)
+{
+#>
+    <#= (isPublic ? "public" : "internal") #> struct <#= name #> : IEquatable<<#= name #>>, IComparable<<#= name #>>
+    {
+        public <#= dataType #> id;
+
+        public <#= name #>(<#= dataType #> id)
+        {
+            this.id = id;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is <#= name #>)) return false;
+            <#= name #> d = (<#= name #>)obj;
+            return this.id == d.id;
+        }
+
+        public override int GetHashCode()
+        {
+            return id.GetHashCode();
+        }
+
+        public override string ToString()
+        {
+            return "(<#= friendlyName #>: " + id.ToString() + ")";
+        }
+
+        public static bool operator ==(<#= name #> a, <#= name #> b)
+        {
+            return a.id == b.id;
+        }
+
+        public static bool operator !=(<#= name #> a, <#= name #> b)
+        {
+            return a.id != b.id;
+        }
+
+        public int CompareTo(<#= name #> other)
+        {
+            if (id < other.id) return -1;
+            if (id > other.id) return 1;
+            return 0;
+        }
+
+        public static bool operator <(<#= name #> a, <#= name #> b)
+        {
+            return a.id < b.id;
+        }
+
+        public static bool operator >(<#= name #> a, <#= name #> b)
+        {
+            return a.id > b.id;
+        }
+
+        public static bool operator <=(<#= name #> a, <#= name #> b)
+        {
+            return a.id <= b.id;
+        }
+
+        public static bool operator >=(<#= name #> a, <#= name #> b)
+        {
+            return a.id >= b.id;
+        }
+
+        public static explicit operator <#= dataType #>(<#= name #> d)
+        {
+            return d.id;
+        }
+
+        public static explicit operator <#= name #>(<#= dataType #> d)
+        {
+            return new <#= name #>(d);
+        }
+
+        public static <#= name #> operator ++(<#= name #> d)
+        {
+            return new <#= name #>(<#= inc("d.id") #>);
+        }
+
+        public bool Equals(<#= name #> other)
+        {
+            return this.id == other.id;
+        }
+
+        public static <#= name #> MinValue { get { return new <#= name #>(<#= dataType #>.MinValue); } }
+
+        public static <#= name #> MaxValue { get { return new <#= name #>(<#= dataType #>.MaxValue); } }
+    }
+
+<#+
+}
+#>

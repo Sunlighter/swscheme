@@ -1,0 +1,147 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".generated.cs" #>
+<#@ assembly name="$(SolutionDir)\Macros\bin\Debug\Macros.dll" #>
+<#@ import namespace="Macros" #>
+/*
+    This file is part of Sunlit World Scheme
+    http://swscheme.codeplex.com/
+    Copyright (c) 2010 by Edward Kiser (edkiser@gmail.com)
+
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to the Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+*/
+using System;
+using System.Collections.Generic;
+
+namespace ExprObjModel.ObjectSystem
+{
+    public partial class ObjectSystem<M>
+    {
+
+        <#
+
+        VariantType[] v = new VariantType[]
+        {
+            new VariantType
+            (
+                "InternalCommand",
+                "private",
+                new Variation[]
+                {
+                    new Variation
+                    (
+                        "IC_AddObject",
+                        new Field[]
+                        {
+                            new Field("obj", "Object", "IMessageHandler<M>"),
+                            new Field("k", "K", "AsyncContinuation<ObjectID>")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IC_RemoveObject",
+                        new Field[]
+                        {
+                            new Field("id", "ID", "ObjectID")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IC_PostMessage",
+                        new Field[]
+                        {
+                            new Field("id", "ID", "ObjectID"),
+                            new Field("msg", "Message", "M"),
+                            new Field("k", "K", "AsyncContinuation<bool>")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IC_PostMessageLater",
+                        new Field[]
+                        {
+                            new Field("delay_ms", "Delay_ms", "uint"),
+                            new Field("id", "ID", "ObjectID"),
+                            new Field("msg", "Message", "M"),
+                            new Field("cancelled", "Cancelled", "Action<M>")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IC_PostMessageOnCompletion",
+                        new Field[]
+                        {
+                            new Field("id", "ID", "ObjectID"),
+                            new Field("iar", "AsyncResult", "IAsyncResult"),
+                            new Field("completion", "Completion", "Func<IAsyncResult, M>"),
+                            new Field("cancelled", "Cancelled", "Action<M>")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IC_MessageComplete",
+                        new Field[]
+                        {
+                            new Field("id", "ID", "ObjectID"),
+                            new Field("thread", "Thread", "int")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IC_Shutdown",
+                        new Field[] { }
+                    )
+                }
+            ),
+            new VariantType
+            (
+                "InternalQueueItem",
+                "private",
+                new Variation[]
+                {
+                    new Variation
+                    (
+                        "IQI_Post",
+                        new Field[]
+                        {
+                            new Field("id", "ID", "ObjectID"),
+                            new Field("msg", "Message", "M")
+                        }
+                    ),
+                    new Variation
+                    (
+                        "IQI_Revisit",
+                        new Field[]
+                        {
+                            new Field("id", "ID", "ObjectID")
+                        }
+                    )
+                }
+            ),
+        };
+
+        foreach(VariantType vt in v)
+        {
+            WriteLine("");
+
+            foreach(string line in MacroUtils.Emit(8, vt))
+            {
+                WriteLine(line);
+            }
+        }
+
+        #>
+
+    }
+}
